@@ -20,6 +20,7 @@ final readonly class ReverbSettings
      * @param  array<string, mixed>|null  $server  reverb.servers.{server}
      * @param  list<array<string, mixed>>  $apps  reverb.apps.apps
      * @param  array<string, string>|null  $frontendEnv  VITE_REVERB_* values, null when not found
+     * @param  int|null  $publishMaxBytes  reverb-kit.publish.max_bytes, null when it is not configured
      */
     public function __construct(
         public string $environment,
@@ -35,6 +36,7 @@ final readonly class ReverbSettings
         public ?array $frontendEnv,
         public ?string $frontendEnvSource,
         public ?string $reverbVersion,
+        public ?int $publishMaxBytes = null,
     ) {}
 
     /**
@@ -69,6 +71,7 @@ final readonly class ReverbSettings
             frontendEnv: FrontendEnv::read($frontendEnvSource),
             frontendEnvSource: $frontendEnvSource,
             reverbVersion: self::reverbVersion(),
+            publishMaxBytes: self::int($config->get('reverb-kit.publish.max_bytes')),
         );
     }
 
