@@ -1,0 +1,83 @@
+{
+    "name": "intragile/laravel-reverb-kit",
+    "description": "Production toolkit for Laravel Reverb: a static `reverb:doctor` deploy gate (also as laravel/doctor diagnostics), nginx/Caddy/Traefik and Docker Swarm/compose generators, and an opt-in broadcast payload size guard.",
+    "keywords": [
+        "laravel",
+        "reverb",
+        "laravel-reverb",
+        "broadcasting",
+        "websocket-proxy",
+        "nginx",
+        "caddy",
+        "traefik",
+        "docker-swarm",
+        "deployment",
+        "diagnostics",
+        "valós idejű",
+        "élesítés",
+        "diagnosztika"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "homepage": "https://intragile.eu",
+    "support": {
+        "issues": "https://github.com/intragile/laravel-reverb-kit/issues",
+        "source": "https://github.com/intragile/laravel-reverb-kit",
+        "security": "https://github.com/intragile/laravel-reverb-kit/security/policy"
+    },
+    "authors": [
+        {
+            "name": "IntrAgile Kft.",
+            "email": "info@intragile.eu",
+            "homepage": "https://intragile.eu"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "illuminate/console": "^12.0|^13.0",
+        "illuminate/contracts": "^12.0|^13.0",
+        "illuminate/support": "^12.0|^13.0"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/doctor": "^0.1",
+        "laravel/pint": "^1.20",
+        "laravel/reverb": "^1.7",
+        "orchestra/testbench": "^10.0|^11.0",
+        "phpunit/phpunit": "^12.0"
+    },
+    "suggest": {
+        "laravel/reverb": "Enables the server-side doctor rules (bind address, scaling, origins, payload limits, version) (^1.7).",
+        "laravel/doctor": "Shows the reverb-kit rules inside `php artisan doctor` (^0.1)."
+    },
+    "conflict": {
+        "illuminate/support": "<12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "IntrAgile\\ReverbKit\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "IntrAgile\\ReverbKit\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "IntrAgile\\ReverbKit\\ReverbKitServiceProvider"
+            ]
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "analyse": "phpstan analyse --memory-limit=1G",
+        "format": "pint"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
