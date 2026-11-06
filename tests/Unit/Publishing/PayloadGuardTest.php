@@ -163,6 +163,10 @@ final class PayloadGuardTest extends TestCase
      */
     private function sentBody(array $channels, string $event, array $payload, ?string $socketId = null): string
     {
+        if (! class_exists(Pusher::class)) {
+            $this->markTestSkipped('pusher/pusher-php-server is not installed.');
+        }
+
         $sent = null;
         $handler = new MockHandler([static function (RequestInterface $request) use (&$sent): Response {
             $sent = (string) $request->getBody();

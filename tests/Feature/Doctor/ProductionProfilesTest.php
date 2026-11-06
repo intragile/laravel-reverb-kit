@@ -21,7 +21,7 @@ final class ProductionProfilesTest extends TestCase
         }
     }
 
-    public function test_intrapp_profile_only_warns_about_origins(): void
+    public function test_containerised_profile_only_warns_about_origins(): void
     {
         config(Profiles::containerised());
 
@@ -31,7 +31,7 @@ final class ProductionProfilesTest extends TestCase
         $this->assertSame(['allowed-origins'], $this->rules($findings, Status::Warning));
     }
 
-    public function test_hosting_profile_skips_everything(): void
+    public function test_profile_without_broadcasting_skips_everything(): void
     {
         config(Profiles::withoutBroadcasting());
 

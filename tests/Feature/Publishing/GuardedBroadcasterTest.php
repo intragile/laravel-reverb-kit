@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Exceptions;
 use IntrAgile\ReverbKit\Publishing\GuardedPusherBroadcaster;
 use IntrAgile\ReverbKit\Publishing\PayloadGuard;
 use IntrAgile\ReverbKit\Publishing\PayloadTooLarge;
+use IntrAgile\ReverbKit\Tests\Fixtures\RecordingPusher;
 use IntrAgile\ReverbKit\Tests\TestCase;
 use Pusher\Pusher;
 
@@ -23,6 +24,10 @@ final class GuardedBroadcasterTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        if (! class_exists(Pusher::class)) {
+            $this->markTestSkipped('pusher/pusher-php-server is not installed.');
+        }
 
         $this->pusher = new RecordingPusher('key', 'secret', '1');
     }
@@ -211,25 +216,5 @@ final class GuardedBroadcasterTest extends TestCase
                 'options' => ['host' => 'localhost', 'port' => 8080, 'scheme' => 'http'],
             ], $extra),
         ]);
-    }
-}
-
-/**
- * A pusher client that records trigger() calls instead of sending them.
- */
-final class RecordingPusher extends Pusher
-{
-    /** @var list<array{channels: mixed, event: string, data: mixed, params: array<mixed>}> */
-    public array $calls = [];
-
-    /**
-     * @param  array<array-key, string>|string  $channels
-     * @param  array<array-key, mixed>  $params
-     */
-    public function trigger($channels, string $event, $data, array $params = [], bool $already_encoded = false): object
-    {
-        $this->calls[] = ['channels' => $channels, 'event' => $event, 'data' => $data, 'params' => $params];
-
-        return (object) [];
     }
 }

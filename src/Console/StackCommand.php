@@ -6,6 +6,7 @@ namespace IntrAgile\ReverbKit\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Config\Repository;
+use Illuminate\Support\Str;
 use IntrAgile\ReverbKit\Settings\ReverbSettings;
 use IntrAgile\ReverbKit\Templates\StubRenderer;
 use IntrAgile\ReverbKit\Templates\TemplateValues;
@@ -34,18 +35,18 @@ final class StackCommand extends Command
 
     public function handle(Repository $config, StubRenderer $renderer): int
     {
-        $format = $this->argument('format');
+        $format = self::text($this->argument('format'));
 
-        if (! is_string($format) || ! array_key_exists($format, self::STUBS)) {
+        if ($format === null || ! array_key_exists($format, self::STUBS)) {
             $this->components->error('Unknown format. Use one of: '.implode(', ', array_keys(self::STUBS)).'.');
 
             return self::FAILURE;
         }
 
         $settings = ReverbSettings::fromConfig($config);
-        $replicas = $this->option('replicas') ?? (string) $settings->replicas;
+        $replicas = self::text($this->option('replicas')) ?? (string) $settings->replicas;
 
-        if (! is_string($replicas) || preg_match('/^[1-9]\d*$/', $replicas) !== 1) {
+        if (preg_match('/^[1-9]\d*$/', $replicas) !== 1) {
             $this->components->error('--replicas must be a positive integer.');
 
             return self::FAILURE;
@@ -70,7 +71,8 @@ final class StackCommand extends Command
         $values = TemplateValues::from($settings, $config, $overrides);
 
         if ($channel === null && (int) $replicas > 1 && $values['scaling_channel'] === 'reverb') {
-            $values['scaling_channel'] = "reverb_{$service}";
+            $app = Str::slug($this->stringConfig($config, 'app.name') ?? 'app', '_');
+            $values['scaling_channel'] = "reverb_{$app}_{$service}";
             $this->output->getErrorStyle()->warning(
                 "The scaling channel is Reverb's default \"reverb\", which every deployment on a shared Redis would join. "
                 ."Using \"{$values['scaling_channel']}\"; pass --scaling-channel to choose another."
@@ -82,9 +84,7 @@ final class StackCommand extends Command
 
     private function stringOption(string $name): ?string
     {
-        $value = $this->option($name);
-
-        return is_string($value) && $value !== '' ? $value : null;
+        return self::text($this->option($name));
     }
 
     private function emit(string $text): int
@@ -112,5 +112,21 @@ final class StackCommand extends Command
         $this->output->getErrorStyle()->writeln("Wrote {$target}.");
 
         return self::SUCCESS;
+    }
+
+    private function stringConfig(Repository $config, string $key): ?string
+    {
+        $value = $config->get($key);
+
+        return is_string($value) && $value !== '' ? $value : null;
+    }
+
+    /**
+     * Narrows a console input value; the declared type of arguments and options differs between
+     * Laravel and Larastan versions, so it is checked at runtime instead.
+     */
+    private static function text(mixed $value): ?string
+    {
+        return is_string($value) && $value !== '' ? $value : null;
     }
 }

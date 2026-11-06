@@ -27,14 +27,17 @@ final class StackCommandTest extends TestCase
 
     public function test_swarm_two_replicas_enable_scaling_and_start_first(): void
     {
-        config(['reverb.servers.reverb.scaling' => ['enabled' => false, 'channel' => 'reverb']]);
+        config([
+            'app.name' => 'Order Desk',
+            'reverb.servers.reverb.scaling' => ['enabled' => false, 'channel' => 'reverb'],
+        ]);
 
         [$code, $output] = $this->runCommand('reverb:stack', ['--replicas' => '2', '--image' => 'app:1']);
 
         $this->assertSame(Command::SUCCESS, $code);
         $this->assertStringContainsString('replicas: 2', $output);
         $this->assertStringContainsString('REVERB_SCALING_ENABLED=true', $output);
-        $this->assertStringContainsString('REVERB_SCALING_CHANNEL=reverb_reverb', $output);
+        $this->assertStringContainsString('REVERB_SCALING_CHANNEL=reverb_order_desk_reverb', $output);
         $this->assertSame(2, substr_count($output, 'order: start-first'));
         $this->assertStringNotContainsString('order: stop-first', $output);
         $this->assertStringContainsString('scaling channel', $output);

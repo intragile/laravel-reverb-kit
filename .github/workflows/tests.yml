@@ -31,3 +31,21 @@ jobs:
       - run: vendor/bin/phpunit
       - run: vendor/bin/phpstan analyse --memory-limit=1G
       - run: vendor/bin/pint --test
+
+  minimal:
+    # Only the required dependencies: proves the package boots and its tests pass (or skip) when
+    # neither laravel/reverb nor laravel/doctor (and so no Pusher client) is installed. No phpstan
+    # here, because the optional classes are missing.
+    runs-on: ubuntu-latest
+    name: PHP 8.3 / Laravel 12.* / no optional packages
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring
+          coverage: none
+      - run: composer remove --dev laravel/reverb laravel/doctor --no-update --no-interaction
+      - run: composer require --dev "illuminate/support:12.*" --no-update --no-interaction
+      - run: composer update --prefer-dist --no-interaction --no-progress
+      - run: vendor/bin/phpunit

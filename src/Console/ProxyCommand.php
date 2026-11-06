@@ -52,9 +52,9 @@ NGINX;
 
     public function handle(Repository $config, StubRenderer $renderer): int
     {
-        $server = $this->argument('server');
+        $server = self::text($this->argument('server'));
 
-        if (! is_string($server) || ! array_key_exists($server, self::STUBS)) {
+        if ($server === null || ! array_key_exists($server, self::STUBS)) {
             $this->components->error('Unknown server. Use one of: '.implode(', ', array_keys(self::STUBS)).'.');
 
             return self::FAILURE;
@@ -108,5 +108,14 @@ NGINX;
         $this->output->getErrorStyle()->writeln("Wrote {$target}.");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Narrows a console input value; the declared type of arguments and options differs between
+     * Laravel and Larastan versions, so it is checked at runtime instead.
+     */
+    private static function text(mixed $value): ?string
+    {
+        return is_string($value) && $value !== '' ? $value : null;
     }
 }
