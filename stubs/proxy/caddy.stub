@@ -14,7 +14,7 @@
 # The matcher ends in "/app/*" so it covers the WebSocket endpoint only and not the HTTP API
 # under /apps.
 {{ public_host }} {
-    handle {{ path }}/app/* {
-        reverse_proxy {{ upstream_host }}:{{ upstream_port }}
-    }
+	handle {{ path }}/app/* {
+		reverse_proxy {{ upstream_host }}:{{ upstream_port }}
+	}
 }

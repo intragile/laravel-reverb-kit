@@ -112,6 +112,8 @@ final class ProxyCommandTest extends TestCase
         $this->assertStringContainsString('ws.example.com {', $output);
         $this->assertStringContainsString('handle /app/* {', $output);
         $this->assertStringContainsString('reverse_proxy reverb:8080', $output);
+        // caddy fmt indents with tabs; spaces make `caddy validate` warn about formatting.
+        $this->assertStringContainsString("\n\thandle /app/* {\n\t\treverse_proxy reverb:8080\n\t}\n}", $output);
         $this->assertStringContainsString('dynamic a', $output);
     }
 
