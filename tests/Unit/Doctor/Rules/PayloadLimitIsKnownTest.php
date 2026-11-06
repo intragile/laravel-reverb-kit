@@ -27,7 +27,7 @@ final class PayloadLimitIsKnownTest extends TestCase
         $this->assertCount(1, $findings);
         $this->assertSame(Status::Ok, $findings[0]->status);
         $this->assertStringContainsString('max_request_size 10000', $findings[0]->message);
-        $this->assertStringContainsString('app-1 max_message_size 10000', $findings[0]->message);
+        $this->assertStringContainsString('app app-1 max_message_size 10000', $findings[0]->message);
     }
 
     public function test_message_size_above_request_size_warns(): void

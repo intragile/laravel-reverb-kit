@@ -36,7 +36,7 @@ final class PayloadLimitIsKnown implements Rule
         }
 
         $requestSize = self::bytes($settings->server['max_request_size'] ?? null);
-        $summary = ["max_request_size {$requestSize}"];
+        $summary = ["max_request_size {$requestSize} bytes"];
         $warnings = [];
 
         $publishMaxBytes = $settings->publishMaxBytes;
@@ -53,12 +53,12 @@ final class PayloadLimitIsKnown implements Rule
             $id = $app['app_id'] ?? null;
             $id = is_scalar($id) ? (string) $id : "#{$index}";
             $messageSize = self::bytes($app['max_message_size'] ?? null);
-            $summary[] = "{$id} max_message_size {$messageSize}";
+            $summary[] = "app {$id} max_message_size {$messageSize}";
 
             if ($messageSize > $requestSize) {
                 $warnings[] = Finding::warning(
                     self::NAME,
-                    "{$id} max_message_size ({$messageSize}) is above max_request_size ({$requestSize}): the wrong variable was raised",
+                    "app {$id} max_message_size ({$messageSize}) is above max_request_size ({$requestSize}): the wrong variable was raised",
                     'raise REVERB_MAX_REQUEST_SIZE as well; the request limit is enforced first',
                 );
             }
