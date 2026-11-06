@@ -1,0 +1,17 @@
+# Traefik labels for the Laravel Reverb service. Merge this block into the service definition.
+#
+# Under Docker Swarm Traefik reads the labels from deploy.labels; labels set directly on the
+# service are attached to the containers and ignored by the Swarm provider. For plain Docker
+# Compose without Swarm, move the list to the service's top-level labels key.
+#
+# Traefik forwards WebSocket upgrades on its own and resolves the service through the provider,
+# so rescheduled containers are picked up without a reload. The rule ends in "/app/" so it covers
+# the WebSocket endpoint only and not the HTTP API under /apps.
+deploy:
+  labels:
+    - "traefik.enable=true"
+    - "traefik.http.routers.{{ service }}.rule=Host(`{{ public_host }}`) && PathPrefix(`{{ path }}/app/`)"
+    - "traefik.http.routers.{{ service }}.entrypoints=websecure"
+    - "traefik.http.routers.{{ service }}.tls=true"
+    - "traefik.http.routers.{{ service }}.service={{ service }}"
+    - "traefik.http.services.{{ service }}.loadbalancer.server.port={{ upstream_port }}"

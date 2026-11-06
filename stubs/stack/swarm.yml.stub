@@ -1,0 +1,51 @@
+# Laravel Reverb as a Docker Swarm service (docker stack deploy). Merge it into your stack file.
+#
+# The server binds to 0.0.0.0 inside the container and publishes no ports: the reverse proxy and
+# the application reach it as {{ service }}:{{ upstream_port }} on the internal network.
+services:
+  {{ service }}:
+    # Your application image: Reverb runs from the same code base as the application.
+    image: {{ image }}
+    command: ["php", "artisan", "reverb:start", "--host=0.0.0.0", "--port={{ upstream_port }}"]
+    environment:
+      - REVERB_SERVER_HOST=0.0.0.0
+      - REVERB_SERVER_PORT={{ upstream_port }}
+      - REVERB_SERVER_PATH={{ path }}
+      # More than one replica requires scaling: every replica must reach the same Redis. Attach
+      # the network your Redis service is on and set REDIS_HOST accordingly.
+      - REVERB_SCALING_ENABLED={{ scaling_enabled }}
+      # Keep the channel unique per deployment when several stacks share one Redis.
+      - REVERB_SCALING_CHANNEL={{ scaling_channel }}
+    networks:
+      - internal
+    healthcheck:
+      # Requires curl in the image.
+      test: ["CMD-SHELL", "{{ healthcheck }}"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      replicas: {{ replicas }}
+      # stop-first for a single replica: without scaling, an old and a new instance running side
+      # by side would split the clients between them, and each would only deliver events to its
+      # own connections. start-first is safe only with scaling on, where every replica relays
+      # events through Redis.
+      update_config:
+        order: {{ update_order }}
+        failure_action: rollback
+      rollback_config:
+        order: {{ update_order }}
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 256M
+        reservations:
+          cpus: "0.05"
+          memory: 80M
+
+networks:
+  # A plain overlay network, not "internal: true": that flag would also cut the outgoing traffic
+  # to Redis and the database.
+  internal:
+    driver: overlay

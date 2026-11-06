@@ -1,0 +1,20 @@
+# Laravel Reverb behind Caddy. Merge the handle block into the site block for {{ public_host }}.
+#
+# Caddy upgrades WebSocket connections on its own and has no idle read timeout by default, so no
+# extra headers or timeouts are needed.
+#
+# Caddy resolves the upstream name when it dials, so a rescheduled container is found again. To
+# balance over the address of every replica instead of the service VIP, replace the static
+# upstream with dynamic resolution:
+#
+#     reverse_proxy {
+#         dynamic a tasks.{{ upstream_host }} {{ upstream_port }}
+#     }
+#
+# The matcher ends in "/app/*" so it covers the WebSocket endpoint only and not the HTTP API
+# under /apps.
+{{ public_host }} {
+    handle {{ path }}/app/* {
+        reverse_proxy {{ upstream_host }}:{{ upstream_port }}
+    }
+}

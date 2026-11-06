@@ -1,0 +1,35 @@
+# Laravel Reverb behind nginx. Place this inside the server block that serves {{ public_host }}.
+#
+# Why proxy_pass uses a variable: with a literal host name in proxy_pass, nginx resolves the
+# name once, at startup, and keeps that address until it is reloaded. When the orchestrator
+# reschedules the Reverb container it gets a new IP and nginx keeps proxying to the old one. With
+# a variable, nginx resolves the name per request through the resolver below and caches the
+# answer for valid=10s only.
+#
+# The default resolver, 127.0.0.11, is Docker's embedded DNS server, reachable from every
+# container on a user-defined network. If nginx does not run inside Docker, set the resolver to
+# the host's DNS server instead (see /etc/resolv.conf).
+#
+# The location ends in "/app/" so it matches the WebSocket endpoint (/app/{key}) only and not the
+# HTTP API under /apps.
+location {{ path }}/app/ {
+    resolver {{ resolver }} valid=10s;
+    set $reverb_upstream "{{ upstream_host }}:{{ upstream_port }}";
+
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "Upgrade";
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+
+    # nginx closes a connection that stays silent for longer than proxy_read_timeout (60s by
+    # default), which equals Reverb's default ping interval. Twice the ping interval keeps idle
+    # but healthy connections open.
+    proxy_read_timeout {{ read_timeout }}s;
+    proxy_send_timeout {{ read_timeout }}s;
+
+    proxy_pass http://$reverb_upstream;
+}
+{{ api_location }}
